@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>BBGM API Call</title>
+</head>
+<body>
+	<div class="workspace">
+		<!-- First we need to push the first button to generate a bearer toke through me-auth endpoint. This token will be used in the next step -->		
+		Step 1: <button class="btn" onclick="retrieveBearer()">Retrieve Bearer</button> <br/>
+		<!-- Enter a request id to test the API call. -->
+		Step 2: Enter a Request ID: <input type="text" id="requestId"><br/>
+		<!-- After the first button processed the key the following button will use the id you have entered above to retrieve the request. -->
+		Step 3: <button class="btn" onclick="retrieveOneRequest()">Retrieve my Request</button>   
+	</div>
+	<div class="result"> 
+		<pre id="request"></pre>
+	</div>
+</body>
+<script>
+
+const tokenURL = 'https://api.microedge.com/auth/token/me-auth';
+const requestURL = 'https://api.microedge.com/goapi/request/getRequest';
+
+const tokenData = '{"userId": [Enter Your UserId here which is "Key Name" from  the API Key file],"privateKey": [This is the "Key Value" from the API key file]}';
+var requestId = '';
+var requestData='';
+var token ='';
+function retrieveBearer(){
+    $.ajax({
+        type: 'post',
+        url: tokenURL,
+        contentType: 'application/json; charset=utf-8',
+        data: tokenData,
+        dataType: 'json',
+        success: function(data1){
+            console.log(data1);
+            token = data1.token
+            console.log(token);
+			alert("Bearer token is saved and ready for data retrieval.");
+        },
+		error: function (xhr, status, error) {
+			console.log("Error! :" + xhr.status);
+			console.log(status);
+			console.log(error);
+		}
+    });
+}
+function retrieveOneRequest(){
+	requestId = document.getElementById("requestId").value;
+	requestData = `{"id": "${requestId}"}`;
+	console.log(requestData);
+    $.ajax({
+        type: 'post',
+        url: requestURL,
+        headers: {
+            'Authorization': `bearer ${token}`,
+        },
+        contentType: 'application/json; charset=utf-8',
+        data: requestData,
+        dataType: 'json',
+        success: function(data2){
+			//var parsed = JSON.parse(data2);
+			document.getElementById("request").style.border = 'black solid 1px;';
+            document.getElementById("request").innerHTML  = JSON.stringify(data2);
+            console.log(data2);
+        },
+		error: function (xhr, status, error) {
+			console.log("Error! :" + xhr.status);
+			console.log(status);
+			console.log(error);
+		}
+    });
+}
+</script>
+<style>
+button {
+	margin: 10px;
+}
+.workspace {
+	border:black solid 1px;
+	width:400px;
+	padding:10px;
+	float:left;
+}
+.result {
+	word-wrap: break-word; 
+	width:400px;
+	padding:10px;
+	margin: 0 0 0 425px;
+	position: relative;
+}
+#request {	
+    word-wrap: break-word;
+    width: 600px;
+    white-space: pre-line;
+}
+
+</style>
+</html>
